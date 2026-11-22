@@ -212,7 +212,7 @@
       username: 'admin',
       password: 'admin123',
       id: 'demo-admin',
-      display_name: '平台管理员',
+      display_name: '王主任',
       role: 'admin',
       department: '信息中心',
     },
