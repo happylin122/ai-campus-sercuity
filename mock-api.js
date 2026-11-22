@@ -176,7 +176,19 @@
   /* ================= 网关状态 ================= */
 
   const state = {
-    events: clone(D.gatewayEvents).sort((a, b) => (a.created_at < b.created_at ? 1 : -1)),
+    events: (() => {
+      const list = clone(D.gatewayEvents).sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+      // 种子事件的时间是写死在数据文件里的，随着演示日期推移会整体落到 24 小时窗口外，
+      // 导致「监测中心」的今日请求 / 拦截率全部为 0。这里按最新一条对齐到 2 小时前，
+      // 其余保持相对间隔，让统计口径始终有数据。
+      if (!list.length) return list;
+      const newest = new Date(list[0].created_at).getTime();
+      const shift = Date.now() - 2 * 3600 * 1000 - newest;
+      list.forEach((e) => {
+        e.created_at = new Date(new Date(e.created_at).getTime() + shift).toISOString();
+      });
+      return list;
+    })(),
     conversations: clone(D.conversations),
     usage: { today_used: 0, daily_limit: 300, minute_used: 0, minute_limit: 6 },
     users: clone(D.users),
